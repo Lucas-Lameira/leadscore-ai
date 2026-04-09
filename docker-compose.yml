@@ -1,0 +1,30 @@
+services:
+  server:
+    build:
+      context: ./server
+      target: builder   # usa o stage de dev (with devDeps) para rodar ts-node
+    command: npm run dev
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server/src:/app/src  # hot reload do código fonte
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      target: builder
+      args:
+        VITE_API_BASE: http://localhost:3001/api
+    command: npm run dev -- --host
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client/src:/app/src
+    depends_on:
+      - server
+    restart: unless-stopped
